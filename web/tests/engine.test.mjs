@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   characterState,
   createSession,
+  refreshSession,
   sessionMetrics,
   splitCharacters,
   updateSession,
@@ -38,4 +39,23 @@ test("metrics use five characters per word", () => {
   session = updateSession(session, "a", 0);
   session = updateSession(session, "abcdefghij", 6000);
   assert.equal(sessionMetrics(session).wpm, 20);
+});
+
+test("timed sessions complete when the limit elapses", () => {
+  let session = createSession("abcdefghijklmnopqrstuvwxyz", 0, { mode: "time", limit: 2 });
+  session = updateSession(session, "abcde", 1000);
+  session = refreshSession(session, 2999);
+  assert.equal(session.completedAt, null);
+  session = refreshSession(session, 3000);
+  assert.equal(session.completedAt, 3000);
+  assert.equal(session.completedReason, "time");
+});
+
+test("metrics include raw speed and remaining time", () => {
+  let session = createSession("abcde", 0, { mode: "time", limit: 10 });
+  session = updateSession(session, "axc", 0);
+  const metrics = sessionMetrics(session, 3000);
+  assert.equal(metrics.rawWpm, 12);
+  assert.equal(metrics.incorrectPositions, 1);
+  assert.equal(metrics.remainingMs, 7000);
 });

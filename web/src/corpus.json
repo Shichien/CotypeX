@@ -1,12 +1,47 @@
-[
-  "先把目标和约束写清楚，再让实现沿着同一条逻辑走到底。",
-  "把复杂问题拆成能够验证的小步骤，每一步都留下明确的结果。",
-  "请检查输入、状态变化和最终输出之间是否形成完整闭环。",
-  "稳定的工具来自清楚的边界，而不是越来越多的临时分支。",
-  "Write the smallest correct change, then verify the complete user flow.",
-  "Good prompts describe the goal, the constraints, and the expected result.",
-  "const result = await verify(input, constraints, expectedOutput);",
-  "A reliable interface stays quiet until the user asks it to do real work.",
-  "Measure twice, change once, and keep the behavior easy to explain.",
-  "function solve(problem) { return analyze(problem).then(verify); }"
-]
+{
+  "javascript": [
+    "const total = cart.items.reduce((sum, item) => {\n  return sum + item.price * item.quantity;\n}, 0);\n\nawait orders.create({ customerId, total, status: \"pending\" });",
+    "async function loadCustomerOrders(customerId) {\n  const response = await fetch(`/api/customers/${customerId}/orders`);\n  if (!response.ok) throw new Error(\"Failed to load orders\");\n  return response.json();\n}",
+    "const available = inventory.filter((item) => item.stock > 0);\nconst result = available.map(({ sku, name, price }) => ({\n  sku,\n  name,\n  price,\n}));"
+  ],
+  "typescript": [
+    "type OrderStatus = \"pending\" | \"paid\" | \"shipped\";\n\ninterface Order {\n  id: string;\n  total: number;\n  status: OrderStatus;\n}\n\nconst paidOrders = orders.filter((order: Order) => order.status === \"paid\");",
+    "async function reserveStock(sku: string, quantity: number): Promise<boolean> {\n  const item = await inventory.findBySku(sku);\n  if (!item || item.available < quantity) return false;\n  await inventory.update(sku, { available: item.available - quantity });\n  return true;\n}",
+    "function calculateInvoice(lines: InvoiceLine[]): number {\n  return lines.reduce((total, line) => {\n    const subtotal = line.unitPrice * line.quantity;\n    return total + subtotal * (1 - line.discount);\n  }, 0);\n}"
+  ],
+  "python": [
+    "def calculate_order_total(items):\n    return sum(\n        item[\"price\"] * item[\"quantity\"]\n        for item in items\n        if item[\"quantity\"] > 0\n    )",
+    "async def create_payment(order_id, amount):\n    order = await orders.get(order_id)\n    if order is None or order.status != \"pending\":\n        raise ValueError(\"Order cannot be paid\")\n    return await payments.create(order_id=order_id, amount=amount)",
+    "def list_active_customers(customers):\n    return [\n        {\"id\": customer.id, \"email\": customer.email}\n        for customer in customers\n        if customer.is_active\n    ]"
+  ],
+  "java": [
+    "public BigDecimal calculateTotal(List<OrderItem> items) {\n    return items.stream()\n        .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))\n        .reduce(BigDecimal.ZERO, BigDecimal::add);\n}",
+    "public Order shipOrder(String orderId) {\n    Order order = repository.findById(orderId)\n        .orElseThrow(() -> new OrderNotFoundException(orderId));\n    order.setStatus(OrderStatus.SHIPPED);\n    return repository.save(order);\n}",
+    "public List<Customer> findActiveCustomers(String region) {\n    return customers.stream()\n        .filter(Customer::isActive)\n        .filter(customer -> region.equals(customer.getRegion()))\n        .toList();\n}"
+  ],
+  "go": [
+    "func CalculateTotal(items []OrderItem) int64 {\n    var total int64\n    for _, item := range items {\n        total += item.UnitPrice * int64(item.Quantity)\n    }\n    return total\n}",
+    "func (s *OrderService) FindOrder(ctx context.Context, id string) (*Order, error) {\n    order, err := s.repo.FindByID(ctx, id)\n    if err != nil {\n        return nil, fmt.Errorf(\"find order %s: %w\", id, err)\n    }\n    return order, nil\n}",
+    "func ReserveStock(item *InventoryItem, quantity int) bool {\n    if quantity <= 0 || item.Available < quantity {\n        return false\n    }\n    item.Available -= quantity\n    return true\n}"
+  ],
+  "rust": [
+    "fn calculate_total(items: &[OrderItem]) -> i64 {\n    items\n        .iter()\n        .map(|item| item.unit_price * item.quantity as i64)\n        .sum()\n}",
+    "async fn find_order(repo: &OrderRepository, id: &str) -> Result<Order, OrderError> {\n    repo.find_by_id(id)\n        .await?\n        .ok_or_else(|| OrderError::NotFound(id.to_owned()))\n}",
+    "fn reserve_stock(item: &mut InventoryItem, quantity: u32) -> bool {\n    if item.available < quantity {\n        return false;\n    }\n    item.available -= quantity;\n    true\n}"
+  ],
+  "sql": [
+    "SELECT\n  customer_id,\n  COUNT(*) AS order_count,\n  SUM(total_amount) AS lifetime_value\nFROM orders\nWHERE status = 'paid'\nGROUP BY customer_id\nHAVING SUM(total_amount) > 1000\nORDER BY lifetime_value DESC;",
+    "UPDATE inventory\nSET available = available - :quantity,\n    updated_at = CURRENT_TIMESTAMP\nWHERE sku = :sku\n  AND available >= :quantity;",
+    "SELECT\n  DATE_TRUNC('month', paid_at) AS month,\n  SUM(total_amount) AS revenue\nFROM orders\nWHERE paid_at >= :start_date\nGROUP BY DATE_TRUNC('month', paid_at)\nORDER BY month;"
+  ],
+  "csharp": [
+    "public decimal CalculateTotal(IEnumerable<OrderItem> items)\n{\n    return items.Sum(item => item.UnitPrice * item.Quantity);\n}",
+    "public async Task<Order> ShipOrderAsync(Guid orderId)\n{\n    var order = await repository.FindAsync(orderId)\n        ?? throw new OrderNotFoundException(orderId);\n    order.Status = OrderStatus.Shipped;\n    return await repository.SaveAsync(order);\n}",
+    "public IEnumerable<Customer> FindActiveCustomers(string region)\n{\n    return customers\n        .Where(customer => customer.IsActive)\n        .Where(customer => customer.Region == region);\n}"
+  ],
+  "php": [
+    "function calculateOrderTotal(array $items): float\n{\n    return array_reduce($items, function (float $total, array $item): float {\n        return $total + $item['price'] * $item['quantity'];\n    }, 0.0);\n}",
+    "function reserveStock(array &$item, int $quantity): bool\n{\n    if ($quantity <= 0 || $item['available'] < $quantity) {\n        return false;\n    }\n    $item['available'] -= $quantity;\n    return true;\n}",
+    "$paidOrders = array_filter(\n    $orders,\n    fn (array $order): bool => $order['status'] === 'paid'\n);"
+  ]
+}

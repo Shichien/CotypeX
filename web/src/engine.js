@@ -1,15 +1,19 @@
 export function splitCharacters(value) {
   return Array.from(String(value ?? "").normalize("NFC"));
 }
-export function createSession(targetText, now = 0) {
+
+export function createSession(targetText, now = 0, options = {}) {
   const target = splitCharacters(targetText);
   if (target.length === 0) throw new Error("target text must not be empty");
   return {
     target,
     typed: [],
+    mode: options.mode ?? "quote",
+    limit: options.limit ?? null,
     startedAt: null,
     updatedAt: now,
     completedAt: null,
+    completedReason: null,
     keystrokes: 0,
     errors: 0,
   };
@@ -30,8 +34,10 @@ export function updateSession(session, nextValue, now = Date.now()) {
   }
 
   const startedAt = session.startedAt ?? (next.length > 0 ? now : null);
-  const complete = next.length === session.target.length
+  const targetComplete = next.length === session.target.length
     && next.every((character, index) => character === session.target[index]);
+  const timeComplete = isTimedOut({ ...session, startedAt }, now);
+  const complete = targetComplete || timeComplete;
 
   return {
     ...session,
@@ -39,8 +45,23 @@ export function updateSession(session, nextValue, now = Date.now()) {
     startedAt,
     updatedAt: now,
     completedAt: complete ? (session.completedAt ?? now) : null,
+    completedReason: complete
+      ? (session.completedReason ?? (timeComplete ? "time" : "target"))
+      : null,
     keystrokes,
     errors,
+  };
+}
+
+export function refreshSession(session, now = Date.now()) {
+  if (session.completedAt !== null || !isTimedOut(session, now)) {
+    return { ...session, updatedAt: now };
+  }
+  return {
+    ...session,
+    updatedAt: now,
+    completedAt: now,
+    completedReason: "time",
   };
 }
 
@@ -56,11 +77,24 @@ export function sessionMetrics(session, now = Date.now()) {
   const accuracy = session.keystrokes === 0
     ? 100
     : Math.max(0, ((session.keystrokes - session.errors) / session.keystrokes) * 100);
+  const remainingMs = session.mode === "time" && Number.isFinite(session.limit)
+    ? Math.max(0, session.limit * 1000 - elapsedMs)
+    : null;
+  const incorrectPositions = session.typed.reduce(
+    (total, character, index) => total + Number(character !== session.target[index]),
+    0,
+  );
   return {
     elapsedMs,
+    remainingMs,
     correctPositions,
+    incorrectPositions,
+    charactersTyped: session.typed.length,
+    keystrokes: session.keystrokes,
+    errors: session.errors,
     progress: correctPositions / session.target.length,
     wpm: Math.round((correctPositions / 5) / minutes),
+    rawWpm: Math.round((session.typed.length / 5) / minutes),
     accuracy: Math.round(accuracy),
     complete: session.completedAt !== null,
   };
@@ -76,4 +110,11 @@ function commonPrefixLength(left, right) {
   let index = 0;
   while (index < length && left[index] === right[index]) index += 1;
   return index;
+}
+
+function isTimedOut(session, now) {
+  return session.mode === "time"
+    && Number.isFinite(session.limit)
+    && session.startedAt !== null
+    && now - session.startedAt >= session.limit * 1000;
 }

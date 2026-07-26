@@ -18,7 +18,7 @@ await build({
   target: "chrome120",
   legalComments: "none",
   banner: {
-    js: "/* CoTypeX 0.3.0 - shared standalone and Codex++ user script */",
+    js: "/* CoTypeX 0.4.2 - shared standalone and Codex++ user script */",
   },
   plugins: [{
     name: "cotypex-assets",

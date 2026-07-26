@@ -1,6 +1,6 @@
 [package]
 name = "cotypex"
-version = "0.3.0"
+version = "0.4.2"
 edition = "2024"
 license = "MIT"
 description = "A typing-practice layer injected into the Codex desktop composer"

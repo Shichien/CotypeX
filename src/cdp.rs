@@ -211,7 +211,7 @@ impl TargetSession {
         let response = self.command(
             "Runtime.evaluate",
             json!({
-                "expression": "window.__COTYPEX__?.version === '0.3.0'",
+                "expression": "typeof window.__COTYPEX__?.ensure === 'function' && typeof window.__COTYPEX__?.destroy === 'function'",
                 "returnByValue": true
             }),
         )?;
@@ -421,6 +421,12 @@ mod tests {
                 };
                 let request: Value = serde_json::from_str(text.as_str()).unwrap();
                 assert_eq!(request["method"], method);
+                if index == 2 {
+                    assert_eq!(
+                        request["params"]["expression"],
+                        "typeof window.__COTYPEX__?.ensure === 'function' && typeof window.__COTYPEX__?.destroy === 'function'"
+                    );
+                }
                 let id = request["id"].as_u64().unwrap();
                 let result = if index == 0 {
                     json!({ "identifier": "script-1" })
