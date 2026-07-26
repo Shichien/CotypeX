@@ -1,0 +1,68 @@
+[data-cotypex-editor="true"] {
+  color: transparent !important;
+  caret-color: transparent !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+[data-cotypex-editor="true"]::placeholder,
+[data-cotypex-editor="true"]::before,
+[data-cotypex-editor="true"] [data-placeholder]::before {
+  color: transparent !important;
+  opacity: 0 !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.cotypex-overlay {
+  position: fixed;
+  z-index: 2147483000;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-color: transparent !important;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cotypex-char {
+  position: relative;
+  color: color-mix(in srgb, currentColor 38%, transparent);
+  white-space: pre-wrap;
+}
+
+.cotypex-char[data-state="correct"] {
+  color: color-mix(in srgb, currentColor 76%, transparent);
+}
+
+.cotypex-char[data-state="incorrect"] {
+  border-radius: 2px;
+  background: color-mix(in srgb, #d14b4b 14%, transparent);
+  color: #d14b4b;
+}
+
+.cotypex-char[data-state="current"] {
+  color: inherit;
+}
+
+.cotypex-char[data-state="current"]::before {
+  position: absolute;
+  top: 0.08em;
+  bottom: 0.08em;
+  left: -1px;
+  width: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  content: "";
+  animation: cotypex-caret 1s steps(1, end) infinite;
+}
+
+@keyframes cotypex-caret {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cotypex-char[data-state="current"]::before {
+    animation: none;
+  }
+}

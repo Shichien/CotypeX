@@ -1,0 +1,12 @@
+[
+  "先把目标和约束写清楚，再让实现沿着同一条逻辑走到底。",
+  "把复杂问题拆成能够验证的小步骤，每一步都留下明确的结果。",
+  "请检查输入、状态变化和最终输出之间是否形成完整闭环。",
+  "稳定的工具来自清楚的边界，而不是越来越多的临时分支。",
+  "Write the smallest correct change, then verify the complete user flow.",
+  "Good prompts describe the goal, the constraints, and the expected result.",
+  "const result = await verify(input, constraints, expectedOutput);",
+  "A reliable interface stays quiet until the user asks it to do real work.",
+  "Measure twice, change once, and keep the behavior easy to explain.",
+  "function solve(problem) { return analyze(problem).then(verify); }"
+]
